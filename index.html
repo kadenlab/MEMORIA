@@ -30,9 +30,9 @@
     html,
     body {
       width: 100%;
-      min-height: 100%;
+      height: 100%;
       margin: 0;
-      overflow-x: hidden;
+      overflow: hidden;
       background: radial-gradient(circle at 50% 0%, #141a24 0, #050608 48%);
       color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -66,10 +66,31 @@
 
     .app {
       width: min(100%, 860px);
-      min-height: calc(100dvh - 28px);
+      height: calc(100dvh - 28px);
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
       gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: -14px;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 3;
+    }
+
+    .app.miss-flash::before {
+      background: radial-gradient(circle at 50% 48%, rgba(255, 94, 102, 0.16), rgba(255, 94, 102, 0) 56%);
+      animation: missPulse 190ms ease-out;
+    }
+
+    .app.clear-flash::before {
+      background: radial-gradient(circle at 50% 48%, rgba(96, 215, 255, 0.16), rgba(96, 215, 255, 0) 58%);
+      animation: missPulse 260ms ease-out;
     }
 
     .topbar {
@@ -130,19 +151,22 @@
 
     .stage {
       display: grid;
-      align-content: center;
+      grid-template-rows: 3.1em 2.4em minmax(0, auto);
+      align-content: start;
       justify-items: center;
-      gap: 12px;
+      gap: 8px;
       min-height: 0;
+      overflow: hidden;
     }
 
     .message {
-      min-height: 2.8em;
+      height: 3.1em;
       width: min(100%, 620px);
       text-align: center;
       color: var(--muted);
       font-size: clamp(0.95rem, 3.4vw, 1.08rem);
       line-height: 1.45;
+      overflow: hidden;
     }
 
     .message strong {
@@ -150,17 +174,20 @@
     }
 
     .countdown {
-      min-height: 1.35em;
+      height: 2.4em;
       color: var(--clear);
       font-size: clamp(1.35rem, 7vw, 2.4rem);
       font-weight: 900;
       line-height: 1;
+      display: grid;
+      place-items: center;
     }
 
     .board-wrap {
       width: 100%;
       display: grid;
       place-items: center;
+      min-height: 0;
     }
 
     .board {
@@ -178,11 +205,13 @@
     .board.hit {
       border-color: var(--danger);
       box-shadow: 0 0 0 3px rgba(255, 94, 102, 0.24), 0 18px 42px rgba(0, 0, 0, 0.34);
+      animation: boardHit 170ms ease-out;
     }
 
     .board.clear {
       border-color: var(--clear);
       box-shadow: 0 0 0 3px rgba(96, 215, 255, 0.26), 0 18px 42px rgba(0, 0, 0, 0.34);
+      animation: boardClear 260ms ease-out;
     }
 
     .tile {
@@ -224,6 +253,35 @@
       background: var(--player);
       box-shadow: 0 0 16px rgba(243, 209, 75, 0.5);
       z-index: 1;
+    }
+
+    .board.hit .tile.player::after {
+      animation: playerBump 170ms ease-out;
+    }
+
+    @keyframes missPulse {
+      0% { opacity: 0; }
+      30% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes boardHit {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      55% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes playerBump {
+      0% { transform: scale(1); background: var(--player); }
+      35% { transform: scale(0.78); background: var(--danger); }
+      100% { transform: scale(1); background: var(--player); }
+    }
+
+    @keyframes boardClear {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.025); }
+      100% { transform: scale(1); }
     }
 
     .pad {
@@ -275,7 +333,7 @@
       }
 
       .app {
-        min-height: calc(100dvh - 20px);
+        height: calc(100dvh - 20px);
         gap: 10px;
       }
 
@@ -294,7 +352,7 @@
       }
 
       .message {
-        min-height: 2.4em;
+        height: 2.7em;
       }
 
       .board {
@@ -318,7 +376,7 @@
 
       .message {
         font-size: 0.88rem;
-        min-height: 2.2em;
+        height: 2.5em;
       }
 
       .pad {
@@ -410,6 +468,7 @@
       feedbackTimer: null
     };
 
+    const appEl = document.querySelector(".app");
     const boardEl = document.querySelector("#board");
     const floorEl = document.querySelector("#floorValue");
     const missEl = document.querySelector("#missValue");
@@ -477,6 +536,7 @@
       game.countdownTimer = null;
       game.feedbackTimer = null;
       boardEl.classList.remove("hit", "clear");
+      appEl.classList.remove("miss-flash", "clear-flash");
       countdownEl.textContent = "";
     }
 
@@ -655,12 +715,16 @@
 
     function flashBoard(className) {
       boardEl.classList.remove("hit", "clear");
+      appEl.classList.remove("miss-flash", "clear-flash");
       void boardEl.offsetWidth;
+      void appEl.offsetWidth;
       boardEl.classList.add(className);
+      appEl.classList.add(className === "hit" ? "miss-flash" : "clear-flash");
       if (game.feedbackTimer) clearTimeout(game.feedbackTimer);
       game.feedbackTimer = window.setTimeout(() => {
         boardEl.classList.remove(className);
-      }, 180);
+        appEl.classList.remove("miss-flash", "clear-flash");
+      }, className === "hit" ? 190 : 260);
     }
 
     function render() {
