@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>MEMORIA</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050608;
+      --panel: #11151d;
+      --panel-2: #171d27;
+      --line: #2d3544;
+      --text: #f0f4ff;
+      --muted: #9aa6bb;
+      --wall: #65718a;
+      --floor: #202838;
+      --goal: #4ccf83;
+      --player: #f3d14b;
+      --danger: #ff5e66;
+      --clear: #60d7ff;
+      --tile-size: min(10.2vw, 8.2vh, 54px);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      background: radial-gradient(circle at 50% 0%, #141a24 0, #050608 48%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      touch-action: manipulation;
+    }
+
+    body {
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+    }
+
+    button {
+      min-height: 48px;
+      border: 1px solid #475267;
+      border-radius: 8px;
+      background: #e6edf8;
+      color: #07090d;
+      font: inherit;
+      font-weight: 800;
+      letter-spacing: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .app {
+      width: min(100%, 860px);
+      min-height: calc(100dvh - 28px);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 8vw, 4.8rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .controls button {
+      min-width: 112px;
+      padding: 0 16px;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .stat {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(17, 21, 29, 0.92);
+      padding: 9px 10px;
+    }
+
+    .label {
+      color: var(--muted);
+      display: block;
+      font-size: 0.72rem;
+    }
+
+    .value {
+      display: block;
+      margin-top: 2px;
+      font-size: clamp(0.95rem, 3vw, 1.15rem);
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stage {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .message {
+      min-height: 2.8em;
+      width: min(100%, 620px);
+      text-align: center;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 3.4vw, 1.08rem);
+      line-height: 1.45;
+    }
+
+    .message strong {
+      color: var(--text);
+    }
+
+    .countdown {
+      min-height: 1.35em;
+      color: var(--clear);
+      font-size: clamp(1.35rem, 7vw, 2.4rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .board-wrap {
+      width: 100%;
+      display: grid;
+      place-items: center;
+    }
+
+    .board {
+      display: grid;
+      gap: 3px;
+      padding: 5px;
+      border: 1px solid #343d50;
+      border-radius: 8px;
+      background: #080a0f;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+      touch-action: none;
+    }
+
+    .board.hit {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(255, 94, 102, 0.24), 0 18px 42px rgba(0, 0, 0, 0.34);
+    }
+
+    .board.clear {
+      border-color: var(--clear);
+      box-shadow: 0 0 0 3px rgba(96, 215, 255, 0.26), 0 18px 42px rgba(0, 0, 0, 0.34);
+    }
+
+    .tile {
+      width: var(--tile-size);
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: #080b10;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .tile.wall {
+      background: linear-gradient(145deg, #7a8499, #4c566d);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .tile.floor,
+    .tile.start {
+      background: var(--floor);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .tile.goal {
+      background: var(--goal);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+    }
+
+    .tile.hidden {
+      background: #05070b;
+      border: 1px solid #0b0f16;
+    }
+
+    .tile.player::after {
+      content: "";
+      width: 58%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--player);
+      box-shadow: 0 0 16px rgba(243, 209, 75, 0.5);
+      z-index: 1;
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, 68px);
+      grid-template-rows: repeat(3, 56px);
+      justify-content: center;
+      gap: 8px;
+      padding-bottom: 2px;
+      user-select: none;
+    }
+
+    .pad button {
+      min-width: 0;
+      min-height: 0;
+      background: var(--panel-2);
+      color: var(--text);
+      font-size: 1.5rem;
+    }
+
+    .pad .up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .pad .left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .pad .right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .pad .down {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    @media (max-width: 700px) {
+      :root {
+        --tile-size: min(8.2vw, 42px);
+      }
+
+      body {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .app {
+        min-height: calc(100dvh - 20px);
+        gap: 10px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+      }
+
+      .hud {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .message {
+        min-height: 2.4em;
+      }
+
+      .board {
+        gap: 2px;
+        padding: 4px;
+      }
+    }
+
+    @media (max-height: 680px) and (orientation: portrait) {
+      :root {
+        --tile-size: min(7.2vw, 34px);
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .stat {
+        padding: 6px 8px;
+      }
+
+      .message {
+        font-size: 0.88rem;
+        min-height: 2.2em;
+      }
+
+      .pad {
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 46px);
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="MEMORIA game">
+    <header class="topbar">
+      <h1>MEMORIA</h1>
+      <div class="controls" aria-label="game controls">
+        <button id="startBtn" type="button">START</button>
+        <button id="restartBtn" type="button">RESTART</button>
+      </div>
+    </header>
+
+    <section class="hud" aria-label="status">
+      <div class="stat">
+        <span class="label">FLOOR</span>
+        <span id="floorValue" class="value">1</span>
+      </div>
+      <div class="stat">
+        <span class="label">MISSES</span>
+        <span id="missValue" class="value">5</span>
+      </div>
+      <div class="stat">
+        <span class="label">STATE</span>
+        <span id="stateValue" class="value">タイトル</span>
+      </div>
+      <div class="stat">
+        <span class="label">SIZE</span>
+        <span id="sizeValue" class="value">5x5</span>
+      </div>
+    </section>
+
+    <section class="stage">
+      <p id="message" class="message">
+        <strong>数秒だけ表示される迷宮を記憶し、暗闇の中を進め。</strong><br>
+        STARTまたはSpaceで開始。
+      </p>
+      <div id="countdown" class="countdown" aria-live="polite"></div>
+      <div class="board-wrap">
+        <div id="board" class="board" aria-label="maze board"></div>
+      </div>
+    </section>
+
+    <nav class="pad" aria-label="touch movement pad">
+      <button class="up" type="button" data-move="0,-1" aria-label="up">↑</button>
+      <button class="left" type="button" data-move="-1,0" aria-label="left">←</button>
+      <button class="right" type="button" data-move="1,0" aria-label="right">→</button>
+      <button class="down" type="button" data-move="0,1" aria-label="down">↓</button>
+    </nav>
+  </main>
+
+  <script>
+    const TILE = {
+      WALL: "#",
+      FLOOR: ".",
+      START: "S",
+      GOAL: "G",
+      PLAYER: "P"
+    };
+
+    const PHASE_LABEL = {
+      title: "タイトル",
+      memory: "記憶フェーズ",
+      explore: "探索フェーズ",
+      clear: "クリア",
+      gameover: "ゲームオーバー"
+    };
+
+    const MAX_MISSES = 5;
+    const CLEAR_DELAY_MS = 900;
+    const game = {
+      phase: "title",
+      floor: 1,
+      misses: MAX_MISSES,
+      map: [],
+      size: 5,
+      memorySeconds: 6,
+      player: { x: 1, y: 1 },
+      goal: { x: 3, y: 3 },
+      seenMapKeys: new Set(),
+      countdownTimer: null,
+      feedbackTimer: null
+    };
+
+    const boardEl = document.querySelector("#board");
+    const floorEl = document.querySelector("#floorValue");
+    const missEl = document.querySelector("#missValue");
+    const stateEl = document.querySelector("#stateValue");
+    const sizeEl = document.querySelector("#sizeValue");
+    const messageEl = document.querySelector("#message");
+    const countdownEl = document.querySelector("#countdown");
+    const startBtn = document.querySelector("#startBtn");
+    const restartBtn = document.querySelector("#restartBtn");
+
+    function difficultyForFloor(floor) {
+      if (floor <= 3) return { size: 5, seconds: 6, extraOpenings: 0, label: "分岐少なめ" };
+      if (floor <= 6) return { size: 7, seconds: 5, extraOpenings: 1, label: "分岐少し" };
+      if (floor <= 10) return { size: 9, seconds: 5, extraOpenings: 2, label: "行き止まり追加" };
+      return { size: 11, seconds: 4, extraOpenings: 4, label: "分岐と行き止まり多め" };
+    }
+
+    function startGame() {
+      game.floor = 1;
+      game.misses = MAX_MISSES;
+      game.seenMapKeys = new Set();
+      startFloor();
+    }
+
+    function restartGame() {
+      clearTimers();
+      startGame();
+    }
+
+    function startFloor() {
+      clearTimers();
+      const difficulty = difficultyForFloor(game.floor);
+      game.size = difficulty.size;
+      game.memorySeconds = difficulty.seconds;
+      const generated = generateReachableMaze(difficulty, game.seenMapKeys);
+      game.map = generated.map;
+      game.seenMapKeys.add(mapKey(game.map));
+      game.player = { ...generated.start };
+      game.goal = { ...generated.goal };
+      game.phase = "memory";
+      messageEl.innerHTML = `<strong>Floor ${game.floor}</strong> ${difficulty.label}。迷宮を記憶してください。`;
+      beginMemoryCountdown();
+      render();
+    }
+
+    function beginMemoryCountdown() {
+      let remaining = game.memorySeconds;
+      countdownEl.textContent = `${remaining}`;
+      game.countdownTimer = window.setInterval(() => {
+        remaining -= 1;
+        countdownEl.textContent = remaining > 0 ? `${remaining}` : "";
+        if (remaining <= 0) {
+          clearInterval(game.countdownTimer);
+          game.countdownTimer = null;
+          game.phase = "explore";
+          messageEl.innerHTML = "<strong>暗闇。</strong> 記憶した通路だけを信じて進んでください。";
+          render();
+        }
+      }, 1000);
+    }
+
+    function clearTimers() {
+      if (game.countdownTimer) clearInterval(game.countdownTimer);
+      if (game.feedbackTimer) clearTimeout(game.feedbackTimer);
+      game.countdownTimer = null;
+      game.feedbackTimer = null;
+      boardEl.classList.remove("hit", "clear");
+      countdownEl.textContent = "";
+    }
+
+    // Maze generation is isolated so later systems can swap in a richer map source.
+    function generateReachableMaze(difficulty, rejectedKeys = new Set()) {
+      for (let attempt = 0; attempt < 200; attempt += 1) {
+        const map = carveMaze(difficulty.size);
+        addExtraOpenings(map, difficulty.extraOpenings);
+        const start = { x: 1, y: 1 };
+        const goal = { x: difficulty.size - 2, y: difficulty.size - 2 };
+        map[start.y][start.x] = TILE.START;
+        map[goal.y][goal.x] = TILE.GOAL;
+        const distance = shortestPathLength(map, start, goal);
+        if (distance >= difficulty.size - 1 && !rejectedKeys.has(mapKey(map))) {
+          return { map, start, goal };
+        }
+      }
+      return generateFallbackMaze(difficulty.size);
+    }
+
+    function mapKey(map) {
+      return map.map((row) => row.join("")).join("|");
+    }
+
+    function carveMaze(size) {
+      const map = Array.from({ length: size }, () => Array(size).fill(TILE.WALL));
+      const stack = [{ x: 1, y: 1 }];
+      map[1][1] = TILE.FLOOR;
+
+      while (stack.length > 0) {
+        const current = stack[stack.length - 1];
+        const neighbors = shuffledDirections()
+          .map((dir) => ({
+            x: current.x + dir.x * 2,
+            y: current.y + dir.y * 2,
+            wallX: current.x + dir.x,
+            wallY: current.y + dir.y
+          }))
+          .filter((next) => inBounds(next.x, next.y, size) && map[next.y][next.x] === TILE.WALL);
+
+        if (neighbors.length === 0) {
+          stack.pop();
+          continue;
+        }
+
+        const next = neighbors[0];
+        map[next.wallY][next.wallX] = TILE.FLOOR;
+        map[next.y][next.x] = TILE.FLOOR;
+        stack.push({ x: next.x, y: next.y });
+      }
+      return map;
+    }
+
+    function addExtraOpenings(map, count) {
+      const candidates = [];
+      for (let y = 1; y < map.length - 1; y += 1) {
+        for (let x = 1; x < map.length - 1; x += 1) {
+          if (map[y][x] !== TILE.WALL) continue;
+          const horizontal = map[y][x - 1] !== TILE.WALL && map[y][x + 1] !== TILE.WALL;
+          const vertical = map[y - 1][x] !== TILE.WALL && map[y + 1][x] !== TILE.WALL;
+          if (horizontal || vertical) candidates.push({ x, y });
+        }
+      }
+
+      shuffle(candidates).slice(0, count).forEach((cell) => {
+        map[cell.y][cell.x] = TILE.FLOOR;
+      });
+    }
+
+    function generateFallbackMaze(size) {
+      const map = Array.from({ length: size }, (_, y) =>
+        Array.from({ length: size }, (_, x) =>
+          x === 0 || y === 0 || x === size - 1 || y === size - 1 ? TILE.WALL : TILE.FLOOR
+        )
+      );
+      const start = { x: 1, y: 1 };
+      const goal = { x: size - 2, y: size - 2 };
+      map[start.y][start.x] = TILE.START;
+      map[goal.y][goal.x] = TILE.GOAL;
+      return { map, start, goal };
+    }
+
+    function shortestPathLength(map, start, goal) {
+      const queue = [{ ...start, distance: 0 }];
+      const seen = new Set([`${start.x},${start.y}`]);
+      while (queue.length > 0) {
+        const current = queue.shift();
+        if (current.x === goal.x && current.y === goal.y) return current.distance;
+        for (const dir of directions()) {
+          const next = { x: current.x + dir.x, y: current.y + dir.y };
+          const key = `${next.x},${next.y}`;
+          if (seen.has(key) || !isWalkable(map, next.x, next.y)) continue;
+          seen.add(key);
+          queue.push({ ...next, distance: current.distance + 1 });
+        }
+      }
+      return -1;
+    }
+
+    function directions() {
+      return [
+        { x: 1, y: 0 },
+        { x: -1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: -1 }
+      ];
+    }
+
+    function shuffledDirections() {
+      return shuffle(directions());
+    }
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function inBounds(x, y, size) {
+      return x > 0 && y > 0 && x < size - 1 && y < size - 1;
+    }
+
+    function isWalkable(map, x, y) {
+      const cell = map[y]?.[x];
+      return cell === TILE.FLOOR || cell === TILE.START || cell === TILE.GOAL;
+    }
+
+    // Input is accepted only in exploration so each press moves exactly one tile.
+    function movePlayer(dx, dy) {
+      if (game.phase !== "explore") return;
+      const nextX = game.player.x + dx;
+      const nextY = game.player.y + dy;
+
+      if (!isWalkable(game.map, nextX, nextY)) {
+        registerMiss();
+        return;
+      }
+
+      game.player = { x: nextX, y: nextY };
+      if (nextX === game.goal.x && nextY === game.goal.y) {
+        clearFloor();
+        return;
+      }
+      render();
+    }
+
+    function registerMiss() {
+      game.misses -= 1;
+      flashBoard("hit");
+      if (game.misses <= 0) {
+        game.misses = 0;
+        game.phase = "gameover";
+        messageEl.innerHTML = `<strong>GAME OVER</strong><br>到達フロア: ${game.floor}`;
+        countdownEl.textContent = "";
+      } else {
+        messageEl.innerHTML = `<strong>壁。</strong> 残りミス ${game.misses}。`;
+      }
+      render();
+    }
+
+    function clearFloor() {
+      game.phase = "clear";
+      messageEl.innerHTML = `<strong>Floor ${game.floor} Clear</strong>`;
+      countdownEl.textContent = "";
+      flashBoard("clear");
+      render();
+      window.setTimeout(() => {
+        if (game.phase !== "clear") return;
+        game.floor += 1;
+        startFloor();
+      }, CLEAR_DELAY_MS);
+    }
+
+    function flashBoard(className) {
+      boardEl.classList.remove("hit", "clear");
+      void boardEl.offsetWidth;
+      boardEl.classList.add(className);
+      if (game.feedbackTimer) clearTimeout(game.feedbackTimer);
+      game.feedbackTimer = window.setTimeout(() => {
+        boardEl.classList.remove(className);
+      }, 180);
+    }
+
+    function render() {
+      floorEl.textContent = `${game.floor}`;
+      missEl.textContent = `${game.misses}`;
+      stateEl.textContent = PHASE_LABEL[game.phase];
+      sizeEl.textContent = `${game.size}x${game.size}`;
+      startBtn.disabled = game.phase === "memory" || game.phase === "explore" || game.phase === "clear";
+      restartBtn.disabled = game.phase === "title";
+      renderBoard();
+    }
+
+    function renderBoard() {
+      const displayMap = game.map.length > 0 ? game.map : emptyTitleMap();
+      boardEl.style.gridTemplateColumns = `repeat(${displayMap.length}, var(--tile-size))`;
+      boardEl.innerHTML = "";
+
+      displayMap.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          const tile = document.createElement("div");
+          const hasPlayer = x === game.player.x && y === game.player.y && game.phase !== "title";
+          tile.className = `tile ${tileClassFor(cell)}${hasPlayer ? " player" : ""}`;
+          boardEl.appendChild(tile);
+        });
+      });
+    }
+
+    function tileClassFor(cell) {
+      if (game.phase === "explore" || game.phase === "gameover") return "hidden";
+      if (cell === TILE.WALL) return "wall";
+      if (cell === TILE.GOAL) return "goal";
+      if (cell === TILE.START) return "start";
+      return "floor";
+    }
+
+    function emptyTitleMap() {
+      return [
+        ["#", "#", "#", "#", "#"],
+        ["#", "S", ".", "G", "#"],
+        ["#", ".", "#", ".", "#"],
+        ["#", ".", ".", ".", "#"],
+        ["#", "#", "#", "#", "#"]
+      ];
+    }
+
+    function handleKey(event) {
+      const key = event.key.toLowerCase();
+      const movement = {
+        arrowup: [0, -1],
+        w: [0, -1],
+        arrowdown: [0, 1],
+        s: [0, 1],
+        arrowleft: [-1, 0],
+        a: [-1, 0],
+        arrowright: [1, 0],
+        d: [1, 0]
+      }[key];
+
+      if (key === " " && (game.phase === "title" || game.phase === "gameover")) {
+        event.preventDefault();
+        startGame();
+        return;
+      }
+
+      if (key === "r") {
+        event.preventDefault();
+        restartGame();
+        return;
+      }
+
+      if (movement) {
+        event.preventDefault();
+        movePlayer(movement[0], movement[1]);
+      }
+    }
+
+    startBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", restartGame);
+    document.addEventListener("keydown", handleKey);
+    document.querySelectorAll("[data-move]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [dx, dy] = button.dataset.move.split(",").map(Number);
+        movePlayer(dx, dy);
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
