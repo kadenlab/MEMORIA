@@ -249,6 +249,9 @@
 
     .tile.start::before,
     .tile.goal::before {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
       display: grid;
       place-items: center;
       width: 70%;
@@ -279,12 +282,21 @@
 
     .tile.player::after {
       content: "";
-      width: 58%;
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      width: 66%;
       aspect-ratio: 1;
       border-radius: 50%;
       background: var(--player);
-      box-shadow: 0 0 16px rgba(243, 209, 75, 0.5);
-      z-index: 1;
+      box-shadow: 0 0 0 2px rgba(5, 6, 8, 0.7), 0 0 16px rgba(243, 209, 75, 0.58);
+      z-index: 2;
+    }
+
+    .tile.start.player::before,
+    .tile.goal.player::before {
+      opacity: 0.22;
+      transform: translate(-50%, -50%) scale(0.9);
     }
 
     .board.hit .tile.player::after {
@@ -305,9 +317,9 @@
     }
 
     @keyframes playerBump {
-      0% { transform: scale(1); background: var(--player); }
-      35% { transform: scale(0.78); background: var(--danger); }
-      100% { transform: scale(1); background: var(--player); }
+      0% { transform: translate(-50%, -50%) scale(1); background: var(--player); }
+      35% { transform: translate(-50%, -50%) scale(0.78); background: var(--danger); }
+      100% { transform: translate(-50%, -50%) scale(1); background: var(--player); }
     }
 
     @keyframes boardClear {
@@ -710,7 +722,10 @@
       if (floor <= 3) return { size: 5, seconds: 4, extraOpenings: 0, label: "分岐少なめ" };
       if (floor <= 6) return { size: 7, seconds: 5, extraOpenings: 1, label: "分岐少し" };
       if (floor <= 10) return { size: 9, seconds: 5, extraOpenings: 2, label: "行き止まり追加" };
-      return { size: 11, seconds: 4, extraOpenings: 4, label: "分岐と行き止まり多め" };
+      if (floor <= 15) return { size: 11, seconds: 4, extraOpenings: 4, label: "分岐と行き止まり多め" };
+      if (floor <= 20) return { size: 11, seconds: 4, extraOpenings: 6, label: "複雑な分岐" };
+      if (floor <= 30) return { size: 13, seconds: 5, extraOpenings: 7, label: "広い迷宮" };
+      return { size: 15, seconds: 5, extraOpenings: 9, label: "深層迷宮" };
     }
 
     function startGame() {
@@ -992,8 +1007,8 @@
     function updateTileSize(size) {
       const isMobile = window.matchMedia("(max-width: 700px)").matches;
       const maxBySize = isMobile
-        ? { 5: 36, 7: 33, 9: 29, 11: 25 }
-        : { 5: 56, 7: 48, 9: 39, 11: 32 };
+        ? { 5: 36, 7: 33, 9: 29, 11: 25, 13: 21, 15: 18 }
+        : { 5: 56, 7: 48, 9: 39, 11: 32, 13: 28, 15: 24 };
       const boardStyle = window.getComputedStyle(boardEl);
       const gap = parseFloat(boardStyle.gap) || 0;
       const paddingX = (parseFloat(boardStyle.paddingLeft) || 0) + (parseFloat(boardStyle.paddingRight) || 0);
@@ -1001,8 +1016,8 @@
       const availableWidth = boardWrapEl.clientWidth - paddingX - gap * (size - 1);
       const availableHeight = boardWrapEl.clientHeight - paddingY - gap * (size - 1);
       const fitted = Math.floor(Math.min(availableWidth, availableHeight) / size);
-      const maxTile = maxBySize[size] || maxBySize[11];
-      const tileSize = Math.max(14, Math.min(maxTile, fitted || maxTile));
+      const maxTile = maxBySize[size] || maxBySize[15];
+      const tileSize = Math.max(10, Math.min(maxTile, fitted || maxTile));
       boardEl.style.setProperty("--tile-size", `${tileSize}px`);
     }
 
