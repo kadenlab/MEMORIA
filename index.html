@@ -152,16 +152,17 @@
 
     .stage {
       display: grid;
-      grid-template-rows: 3.1em 2.8em minmax(0, auto);
-      align-content: center;
+      grid-template-rows: 2.75em 2.35em minmax(0, auto);
+      align-content: start;
       justify-items: center;
-      gap: 10px;
+      gap: 8px;
       min-height: 0;
       overflow: hidden;
+      padding-top: clamp(8px, 2vh, 22px);
     }
 
     .message {
-      height: 3.1em;
+      height: 2.75em;
       width: min(100%, 620px);
       text-align: center;
       color: var(--muted);
@@ -177,9 +178,9 @@
     }
 
     .countdown {
-      height: 2.8em;
+      height: 2.35em;
       color: var(--clear);
-      font-size: clamp(1.35rem, 7vw, 2.4rem);
+      font-size: clamp(1.35rem, 5.6vw, 2.25rem);
       font-weight: 900;
       line-height: 1;
       display: grid;
@@ -191,6 +192,7 @@
       display: grid;
       place-items: center;
       min-height: 0;
+      padding-top: 4px;
     }
 
     .board {
@@ -336,7 +338,7 @@
 
       .app {
         height: calc(100dvh - 16px);
-        grid-template-rows: auto auto minmax(0, 1fr) 118px;
+        grid-template-rows: auto auto minmax(0, 1fr) 126px;
         gap: 7px;
       }
 
@@ -382,6 +384,7 @@
         grid-template-rows: 2.55em 1.55em minmax(0, auto);
         align-content: start;
         gap: 3px;
+        padding-top: 0;
       }
 
       .message {
@@ -402,14 +405,17 @@
 
       .board-wrap {
         place-items: start center;
+        padding-top: 0;
       }
 
       .pad {
         display: grid;
         grid-template-columns: repeat(3, 54px);
         grid-template-rows: repeat(3, 38px);
-        align-content: center;
+        align-content: start;
         gap: 7px;
+        padding-top: 2px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
       }
 
       .pad button {
@@ -427,7 +433,7 @@
       }
 
       .app {
-        grid-template-rows: auto auto minmax(0, 1fr) 98px;
+        grid-template-rows: auto auto minmax(0, 1fr) 108px;
         gap: 5px;
       }
 
@@ -454,6 +460,7 @@
         grid-template-columns: repeat(3, 48px);
         grid-template-rows: repeat(3, 32px);
         gap: 5px;
+        padding-bottom: max(9px, env(safe-area-inset-bottom));
       }
     }
   </style>
