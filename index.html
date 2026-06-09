@@ -144,7 +144,8 @@
       margin-top: 2px;
       font-size: clamp(0.95rem, 3vw, 1.15rem);
       font-weight: 800;
-      white-space: nowrap;
+      line-height: 1.15;
+      white-space: normal;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -167,6 +168,8 @@
       font-size: clamp(0.95rem, 3.4vw, 1.08rem);
       line-height: 1.45;
       overflow: hidden;
+      display: grid;
+      place-items: center;
     }
 
     .message strong {
@@ -376,15 +379,15 @@
       }
 
       .stage {
-        grid-template-rows: 2.15em 1.55em minmax(0, auto);
+        grid-template-rows: 2.55em 1.55em minmax(0, auto);
         align-content: start;
         gap: 3px;
       }
 
       .message {
-        height: 2.15em;
-        font-size: 0.82rem;
-        line-height: 1.22;
+        height: 2.55em;
+        font-size: 0.84rem;
+        line-height: 1.32;
       }
 
       .countdown {
@@ -437,9 +440,9 @@
       }
 
       .message {
-        font-size: 0.76rem;
-        height: 2em;
-        line-height: 1.18;
+        font-size: 0.78rem;
+        height: 2.35em;
+        line-height: 1.28;
       }
 
       .countdown {
@@ -548,7 +551,7 @@
     const restartBtn = document.querySelector("#restartBtn");
 
     function difficultyForFloor(floor) {
-      if (floor <= 3) return { size: 5, seconds: 6, extraOpenings: 0, label: "分岐少なめ" };
+      if (floor <= 3) return { size: 5, seconds: 4, extraOpenings: 0, label: "分岐少なめ" };
       if (floor <= 6) return { size: 7, seconds: 5, extraOpenings: 1, label: "分岐少し" };
       if (floor <= 10) return { size: 9, seconds: 5, extraOpenings: 2, label: "行き止まり追加" };
       return { size: 11, seconds: 4, extraOpenings: 4, label: "分岐と行き止まり多め" };
