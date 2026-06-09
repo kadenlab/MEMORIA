@@ -152,17 +152,17 @@
 
     .stage {
       display: grid;
-      grid-template-rows: 2.75em 2.35em minmax(0, auto);
+      grid-template-rows: 2.65em 3em minmax(0, auto);
       align-content: start;
       justify-items: center;
-      gap: 8px;
+      gap: 10px;
       min-height: 0;
       overflow: hidden;
       padding-top: clamp(8px, 2vh, 22px);
     }
 
     .message {
-      height: 2.75em;
+      height: 2.65em;
       width: min(100%, 620px);
       text-align: center;
       color: var(--muted);
@@ -178,13 +178,14 @@
     }
 
     .countdown {
-      height: 2.35em;
+      height: 3em;
       color: var(--clear);
-      font-size: clamp(1.35rem, 5.6vw, 2.25rem);
+      font-size: clamp(1.45rem, 5.6vw, 2.35rem);
       font-weight: 900;
       line-height: 1;
       display: grid;
-      place-items: center;
+      place-items: start center;
+      padding-top: 0.12em;
     }
 
     .board-wrap {
@@ -192,7 +193,7 @@
       display: grid;
       place-items: center;
       min-height: 0;
-      padding-top: 4px;
+      padding-top: 12px;
     }
 
     .board {
@@ -338,7 +339,7 @@
 
       .app {
         height: calc(100dvh - 16px);
-        grid-template-rows: auto auto minmax(0, 1fr) 126px;
+        grid-template-rows: auto auto minmax(0, 1fr) 166px;
         gap: 7px;
       }
 
@@ -411,11 +412,11 @@
       .pad {
         display: grid;
         grid-template-columns: repeat(3, 54px);
-        grid-template-rows: repeat(3, 38px);
+        grid-template-rows: repeat(3, 36px);
         align-content: start;
         gap: 7px;
-        padding-top: 2px;
-        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        padding-top: 0;
+        padding-bottom: max(42px, calc(env(safe-area-inset-bottom) + 24px));
       }
 
       .pad button {
@@ -425,7 +426,7 @@
 
     @media (max-height: 680px) and (orientation: portrait) {
       :root {
-        --tile-size: min(6.9vw, 3.75vh, 31px);
+        --tile-size: min(6.7vw, 3.55vh, 30px);
       }
 
       h1 {
@@ -433,7 +434,7 @@
       }
 
       .app {
-        grid-template-rows: auto auto minmax(0, 1fr) 108px;
+        grid-template-rows: auto auto minmax(0, 1fr) 148px;
         gap: 5px;
       }
 
@@ -458,9 +459,9 @@
 
       .pad {
         grid-template-columns: repeat(3, 48px);
-        grid-template-rows: repeat(3, 32px);
+        grid-template-rows: repeat(3, 30px);
         gap: 5px;
-        padding-bottom: max(9px, env(safe-area-inset-bottom));
+        padding-bottom: max(36px, calc(env(safe-area-inset-bottom) + 22px));
       }
     }
   </style>
