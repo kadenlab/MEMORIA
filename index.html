@@ -152,7 +152,7 @@
 
     .stage {
       display: grid;
-      grid-template-rows: 2.65em 3em minmax(0, auto);
+      grid-template-rows: 2.65em 3em minmax(0, 1fr);
       align-content: start;
       justify-items: center;
       gap: 10px;
@@ -190,6 +190,7 @@
 
     .board-wrap {
       width: 100%;
+      height: 100%;
       display: grid;
       place-items: center;
       min-height: 0;
@@ -244,6 +245,31 @@
     .tile.goal {
       background: var(--goal);
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+    }
+
+    .tile.start::before,
+    .tile.goal::before {
+      display: grid;
+      place-items: center;
+      width: 70%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      font-size: clamp(0.75rem, 2.6vw, 1rem);
+      font-weight: 900;
+      line-height: 1;
+      color: #071018;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.14);
+    }
+
+    .tile.start::before {
+      content: "S";
+      background: #f3d14b;
+    }
+
+    .tile.goal::before {
+      content: "G";
+      background: #ffffff;
+      color: #0c5f34;
     }
 
     .tile.hidden {
@@ -308,6 +334,80 @@
       font-size: 1.5rem;
     }
 
+    .dev-panel {
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      width: min(430px, calc(100vw - 24px));
+      transform: translateX(-50%);
+      z-index: 10;
+      display: none;
+      gap: 10px;
+      border: 1px solid #53617a;
+      border-radius: 8px;
+      background: rgba(12, 15, 22, 0.96);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.46);
+      padding: 12px;
+    }
+
+    .dev-panel.open {
+      display: grid;
+    }
+
+    .dev-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+    }
+
+    .dev-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .dev-panel label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 10px;
+      background: #111722;
+      font-weight: 800;
+    }
+
+    .dev-panel input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+
+    .dev-floor {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .dev-floor input {
+      min-width: 0;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0b1018;
+      color: var(--text);
+      font: inherit;
+      font-weight: 800;
+      padding: 0 10px;
+    }
+
+    .dev-panel button {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+
     .pad .up {
       grid-column: 2;
       grid-row: 1;
@@ -339,20 +439,21 @@
 
       .app {
         height: calc(100dvh - 16px);
-        grid-template-rows: auto auto minmax(0, 1fr) 166px;
+        grid-template-rows: auto minmax(0, 1fr) 116px auto auto;
         gap: 7px;
       }
 
       .topbar {
-        grid-template-columns: 1fr;
-        gap: 7px;
+        display: contents;
       }
 
       h1 {
+        order: 1;
         font-size: clamp(2rem, 10vw, 2.8rem);
       }
 
       .controls {
+        order: 4;
         display: grid;
         grid-template-columns: 1fr 1fr;
         width: 100%;
@@ -365,24 +466,33 @@
       }
 
       .hud {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
+        order: 5;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        padding-bottom: max(6px, env(safe-area-inset-bottom));
       }
 
       .stat {
-        padding: 6px 8px;
+        border-radius: 6px;
+        padding: 4px 5px;
+        text-align: center;
       }
 
       .label {
-        font-size: 0.66rem;
+        font-size: 0.52rem;
+        line-height: 1;
       }
 
       .value {
-        font-size: 0.98rem;
+        margin-top: 1px;
+        font-size: 0.78rem;
+        line-height: 1.05;
+        white-space: nowrap;
       }
 
       .stage {
-        grid-template-rows: 2.55em 1.55em minmax(0, auto);
+        order: 2;
+        grid-template-rows: 2.55em 1.55em minmax(0, 1fr);
         align-content: start;
         gap: 3px;
         padding-top: 0;
@@ -410,13 +520,14 @@
       }
 
       .pad {
+        order: 3;
         display: grid;
         grid-template-columns: repeat(3, 54px);
         grid-template-rows: repeat(3, 36px);
         align-content: start;
         gap: 7px;
         padding-top: 0;
-        padding-bottom: max(42px, calc(env(safe-area-inset-bottom) + 24px));
+        padding-bottom: 4px;
       }
 
       .pad button {
@@ -434,16 +545,24 @@
       }
 
       .app {
-        grid-template-rows: auto auto minmax(0, 1fr) 148px;
+        grid-template-rows: auto minmax(0, 1fr) 102px auto auto;
         gap: 5px;
       }
 
       .controls button {
-        min-height: 36px;
+        min-height: 34px;
       }
 
       .stat {
-        padding: 5px 7px;
+        padding: 3px 4px;
+      }
+
+      .label {
+        font-size: 0.5rem;
+      }
+
+      .value {
+        font-size: 0.72rem;
       }
 
       .message {
@@ -461,7 +580,7 @@
         grid-template-columns: repeat(3, 48px);
         grid-template-rows: repeat(3, 30px);
         gap: 5px;
-        padding-bottom: max(36px, calc(env(safe-area-inset-bottom) + 22px));
+        padding-bottom: 3px;
       }
     }
   </style>
@@ -469,7 +588,7 @@
 <body>
   <main class="app" aria-label="MEMORIA game">
     <header class="topbar">
-      <h1>MEMORIA</h1>
+      <h1 id="logo" title="MEMORIA">MEMORIA</h1>
       <div class="controls" aria-label="game controls">
         <button id="startBtn" type="button">START</button>
         <button id="restartBtn" type="button">RESTART</button>
@@ -512,6 +631,21 @@
       <button class="right" type="button" data-move="1,0" aria-label="right">→</button>
       <button class="down" type="button" data-move="0,1" aria-label="down">↓</button>
     </nav>
+
+    <section id="devPanel" class="dev-panel" aria-label="developer mode">
+      <div class="dev-title">
+        <span>記憶の管理者モード</span>
+        <button id="devCloseBtn" type="button">CLOSE</button>
+      </div>
+      <div class="dev-grid">
+        <label><input id="devInvincible" type="checkbox">無敵</label>
+        <label><input id="devReveal" type="checkbox">マップ表示</label>
+      </div>
+      <div class="dev-floor">
+        <input id="devFloorInput" type="number" min="1" max="99" value="1" aria-label="floor">
+        <button id="devFloorBtn" type="button">階層へ</button>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -543,12 +677,18 @@
       player: { x: 1, y: 1 },
       goal: { x: 3, y: 3 },
       seenMapKeys: new Set(),
+      devModeUnlocked: false,
+      devPendingUnlock: false,
+      devInvincible: false,
+      devRevealMap: false,
       countdownTimer: null,
       feedbackTimer: null
     };
 
     const appEl = document.querySelector(".app");
+    const logoEl = document.querySelector("#logo");
     const boardEl = document.querySelector("#board");
+    const boardWrapEl = document.querySelector(".board-wrap");
     const floorEl = document.querySelector("#floorValue");
     const missEl = document.querySelector("#missValue");
     const stateEl = document.querySelector("#stateValue");
@@ -557,6 +697,14 @@
     const countdownEl = document.querySelector("#countdown");
     const startBtn = document.querySelector("#startBtn");
     const restartBtn = document.querySelector("#restartBtn");
+    const devPanelEl = document.querySelector("#devPanel");
+    const devCloseBtn = document.querySelector("#devCloseBtn");
+    const devInvincibleEl = document.querySelector("#devInvincible");
+    const devRevealEl = document.querySelector("#devReveal");
+    const devFloorInputEl = document.querySelector("#devFloorInput");
+    const devFloorBtn = document.querySelector("#devFloorBtn");
+    const DEV_CODE = ["up", "up", "down", "down", "left", "right", "left", "right"];
+    const devInputBuffer = [];
 
     function difficultyForFloor(floor) {
       if (floor <= 3) return { size: 5, seconds: 4, extraOpenings: 0, label: "分岐少なめ" };
@@ -766,6 +914,12 @@
     }
 
     function registerMiss() {
+      if (game.devInvincible) {
+        flashBoard("hit");
+        messageEl.innerHTML = "<strong>DEV 無敵。</strong> 壁ミスを無効化しました。";
+        render();
+        return;
+      }
       game.misses -= 1;
       flashBoard("hit");
       if (game.misses <= 0) {
@@ -809,8 +963,11 @@
     function render() {
       floorEl.textContent = `${game.floor}`;
       missEl.textContent = `${game.misses}`;
-      stateEl.textContent = PHASE_LABEL[game.phase];
+      stateEl.textContent = `${PHASE_LABEL[game.phase]}${game.devModeUnlocked ? " DEV" : ""}`;
       sizeEl.textContent = `${game.size}x${game.size}`;
+      devFloorInputEl.value = game.floor;
+      devInvincibleEl.checked = game.devInvincible;
+      devRevealEl.checked = game.devRevealMap;
       startBtn.disabled = game.phase === "memory" || game.phase === "explore" || game.phase === "clear";
       restartBtn.disabled = game.phase === "title";
       renderBoard();
@@ -818,6 +975,7 @@
 
     function renderBoard() {
       const displayMap = game.map.length > 0 ? game.map : emptyTitleMap();
+      updateTileSize(displayMap.length);
       boardEl.style.gridTemplateColumns = `repeat(${displayMap.length}, var(--tile-size))`;
       boardEl.innerHTML = "";
 
@@ -831,8 +989,25 @@
       });
     }
 
+    function updateTileSize(size) {
+      const isMobile = window.matchMedia("(max-width: 700px)").matches;
+      const maxBySize = isMobile
+        ? { 5: 36, 7: 33, 9: 29, 11: 25 }
+        : { 5: 56, 7: 48, 9: 39, 11: 32 };
+      const boardStyle = window.getComputedStyle(boardEl);
+      const gap = parseFloat(boardStyle.gap) || 0;
+      const paddingX = (parseFloat(boardStyle.paddingLeft) || 0) + (parseFloat(boardStyle.paddingRight) || 0);
+      const paddingY = (parseFloat(boardStyle.paddingTop) || 0) + (parseFloat(boardStyle.paddingBottom) || 0);
+      const availableWidth = boardWrapEl.clientWidth - paddingX - gap * (size - 1);
+      const availableHeight = boardWrapEl.clientHeight - paddingY - gap * (size - 1);
+      const fitted = Math.floor(Math.min(availableWidth, availableHeight) / size);
+      const maxTile = maxBySize[size] || maxBySize[11];
+      const tileSize = Math.max(14, Math.min(maxTile, fitted || maxTile));
+      boardEl.style.setProperty("--tile-size", `${tileSize}px`);
+    }
+
     function tileClassFor(cell) {
-      if (game.phase === "explore" || game.phase === "gameover") return "hidden";
+      if ((game.phase === "explore" || game.phase === "gameover") && !game.devRevealMap) return "hidden";
       if (cell === TILE.WALL) return "wall";
       if (cell === TILE.GOAL) return "goal";
       if (cell === TILE.START) return "start";
@@ -852,14 +1027,14 @@
     function handleKey(event) {
       const key = event.key.toLowerCase();
       const movement = {
-        arrowup: [0, -1],
-        w: [0, -1],
-        arrowdown: [0, 1],
-        s: [0, 1],
-        arrowleft: [-1, 0],
-        a: [-1, 0],
-        arrowright: [1, 0],
-        d: [1, 0]
+        arrowup: { step: "up", move: [0, -1] },
+        w: { step: "up", move: [0, -1] },
+        arrowdown: { step: "down", move: [0, 1] },
+        s: { step: "down", move: [0, 1] },
+        arrowleft: { step: "left", move: [-1, 0] },
+        a: { step: "left", move: [-1, 0] },
+        arrowright: { step: "right", move: [1, 0] },
+        d: { step: "right", move: [1, 0] }
       }[key];
 
       if (key === " " && (game.phase === "title" || game.phase === "gameover")) {
@@ -876,18 +1051,68 @@
 
       if (movement) {
         event.preventDefault();
-        movePlayer(movement[0], movement[1]);
+        recordDevInput(movement.step);
+        movePlayer(movement.move[0], movement.move[1]);
       }
+    }
+
+    function recordDevInput(step) {
+      devInputBuffer.push(step);
+      if (devInputBuffer.length > DEV_CODE.length) devInputBuffer.shift();
+      if (DEV_CODE.every((codeStep, index) => devInputBuffer[index] === codeStep)) {
+        game.devPendingUnlock = true;
+      }
+    }
+
+    function toggleDevPanel() {
+      if (!game.devModeUnlocked && game.devPendingUnlock) {
+        game.devModeUnlocked = true;
+        game.devPendingUnlock = false;
+        devInputBuffer.length = 0;
+        messageEl.innerHTML = "<strong>記憶の管理者モードを解放。</strong>";
+        devPanelEl.classList.add("open");
+        render();
+        return;
+      }
+      if (!game.devModeUnlocked) return;
+      devPanelEl.classList.toggle("open");
+      render();
+    }
+
+    function jumpToDevFloor() {
+      const nextFloor = Math.max(1, Math.min(99, Number(devFloorInputEl.value) || 1));
+      clearTimers();
+      game.floor = nextFloor;
+      game.misses = Math.max(game.misses, 1);
+      startFloor();
+      devPanelEl.classList.add("open");
     }
 
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", restartGame);
+    logoEl.addEventListener("click", toggleDevPanel);
+    devCloseBtn.addEventListener("click", () => devPanelEl.classList.remove("open"));
+    devInvincibleEl.addEventListener("change", () => {
+      game.devInvincible = devInvincibleEl.checked;
+      render();
+    });
+    devRevealEl.addEventListener("change", () => {
+      game.devRevealMap = devRevealEl.checked;
+      render();
+    });
+    devFloorBtn.addEventListener("click", jumpToDevFloor);
     document.addEventListener("keydown", handleKey);
     document.querySelectorAll("[data-move]").forEach((button) => {
       button.addEventListener("click", () => {
         const [dx, dy] = button.dataset.move.split(",").map(Number);
+        const step = { "0,-1": "up", "0,1": "down", "-1,0": "left", "1,0": "right" }[button.dataset.move];
+        recordDevInput(step);
         movePlayer(dx, dy);
       });
+    });
+    window.addEventListener("resize", renderBoard);
+    window.addEventListener("orientationchange", () => {
+      window.setTimeout(renderBoard, 120);
     });
 
     render();
