@@ -693,6 +693,7 @@
       devPendingUnlock: false,
       devInvincible: false,
       devRevealMap: false,
+      recoverUntil: 0,
       countdownTimer: null,
       feedbackTimer: null
     };
@@ -742,6 +743,7 @@
 
     function startFloor() {
       clearTimers();
+      game.recoverUntil = 0;
       const difficulty = difficultyForFloor(game.floor);
       game.size = difficulty.size;
       game.memorySeconds = difficulty.seconds;
@@ -916,6 +918,10 @@
       const nextY = game.player.y + dy;
 
       if (!isWalkable(game.map, nextX, nextY)) {
+        if (isRecovering()) {
+          flashBoard("hit");
+          return;
+        }
         registerMiss();
         return;
       }
@@ -936,6 +942,7 @@
         return;
       }
       game.misses -= 1;
+      game.recoverUntil = Date.now() + 500;
       flashBoard("hit");
       if (game.misses <= 0) {
         game.misses = 0;
@@ -946,6 +953,10 @@
         messageEl.innerHTML = `<strong>壁。</strong> 残りミス ${game.misses}。`;
       }
       render();
+    }
+
+    function isRecovering() {
+      return Date.now() < game.recoverUntil;
     }
 
     function clearFloor() {
