@@ -451,7 +451,7 @@
 
       .app {
         height: calc(100dvh - 16px);
-        grid-template-rows: auto minmax(0, 1fr) 116px auto auto;
+        grid-template-rows: auto minmax(0, 1fr) 142px auto auto;
         gap: 7px;
       }
 
@@ -465,7 +465,7 @@
       }
 
       .controls {
-        order: 4;
+        order: 5;
         display: grid;
         grid-template-columns: 1fr 1fr;
         width: 100%;
@@ -478,10 +478,9 @@
       }
 
       .hud {
-        order: 5;
+        order: 4;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 4px;
-        padding-bottom: max(6px, env(safe-area-inset-bottom));
       }
 
       .stat {
@@ -534,16 +533,16 @@
       .pad {
         order: 3;
         display: grid;
-        grid-template-columns: repeat(3, 54px);
-        grid-template-rows: repeat(3, 36px);
+        grid-template-columns: repeat(3, 64px);
+        grid-template-rows: repeat(3, 44px);
         align-content: start;
-        gap: 7px;
+        gap: 8px;
         padding-top: 0;
         padding-bottom: 4px;
       }
 
       .pad button {
-        font-size: 1.35rem;
+        font-size: 1.55rem;
       }
     }
 
@@ -557,7 +556,7 @@
       }
 
       .app {
-        grid-template-rows: auto minmax(0, 1fr) 102px auto auto;
+        grid-template-rows: auto minmax(0, 1fr) 126px auto auto;
         gap: 5px;
       }
 
@@ -589,9 +588,9 @@
       }
 
       .pad {
-        grid-template-columns: repeat(3, 48px);
-        grid-template-rows: repeat(3, 30px);
-        gap: 5px;
+        grid-template-columns: repeat(3, 58px);
+        grid-template-rows: repeat(3, 36px);
+        gap: 6px;
         padding-bottom: 3px;
       }
     }
